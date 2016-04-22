@@ -41,6 +41,7 @@ usage() {
     prev[ious]           output previous release commit
     exec|run <cmd>       execute the given <cmd>
     console              open an ssh session to the host
+    db                   transfer database
     list                 list previous deploy commits
     [ref]                deploy to [ref], the 'ref' setting, or latest tag
 
@@ -183,6 +184,7 @@ hook() {
 setup() {
   local path=`config_get path`
   local repo=`config_get repo`
+  local link=`config_get link`
   run "mkdir -p $path/{shared/{logs,pids},source}"
   test $? -eq 0 || abort setup paths failed
   log running setup
@@ -191,7 +193,20 @@ setup() {
   test $? -eq 0 || abort failed to clone
   run "ln -sfn $path/source $path/current"
   test $? -eq 0 || abort symlink failed
+  if test -n "$link"; then
+    run "ln -sfn $path/current $link"
+    test $? -eq 0 || abort symlink failed
+  fi
   log setup complete
+}
+
+db() {
+  local dbhost=`config_get dbhost`
+  local dbuser=`config_get dbuser`
+  local dbpass=`config_get dbpass`
+  local db=`config_get db`
+  run "mysql $db -h $dbhost -u $dbuser -p$dbpass"
+  test $? -eq 0 || abort Problem connecting to database
 }
 
 #
@@ -353,6 +368,7 @@ while test $# -ne 0; do
     prev|previous) require_env; nth_deploy_commit 2; exit ;;
     revert) require_env; revert_to ${1-1}; exit ;;
     setup) require_env; setup $@; exit ;;
+    db) require_env; db $@; exit ;;
     list) require_env; list_deploys; exit ;;
     update) update; exit ;;
     config) config $@; exit ;;

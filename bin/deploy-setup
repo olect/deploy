@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+CONFIGFILE=
+CURRENT=`pwd`
+
+
+abort() {
+  echo
+  echo "  $@" 1>&2
+  echo
+  exit 1
+}
+
+read -p "Enter path to solution ($CURRENT):" configpath
+if [ -z "$configpath" ]; then 
+  CONFIGFILE="$CURRENT/deploy.conf"
+else
+  CONFIGFILE="$configpath/deploy.conf"
+fi
+
+if [ -e "$CONFIGFILE" ]; then
+  abort Configfile already exists! Please delete before continueing.
+fi
+
+#[production]
+#key /home/digitroll/.ssh/trinity
+#user digitroll
+#host neo.digitroll.no
+#repo git@bitbucket.org:digitrollet/tippetue.git
+#path /var/deployed/tippetue.no
+#link /var/www/tippetue.no
+#ref origin/master
+#post-deploy /var/www/tippetue.no/update.sh
